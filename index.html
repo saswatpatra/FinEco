@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinGPT - Your friendly finance guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #6d28d9;
+            --dark: #020617;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --user-bubble: #334155;
+            --bot-bubble: #1e40af;
+            --error-bubble: #7f1d1d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Landing Page */
+        .landing {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            transition: opacity 0.5s ease;
+        }
+
+        .logo {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-bottom: 3rem;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Chat Interface */
+        #chat-page {
+            display: none;
+            position: relative;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1rem;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--darker);
+        }
+
+        .chat-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .clear-btn {
+            background: none;
+            border: 1px solid var(--gray);
+            color: var(--gray);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            border-color: var(--primary);
+            color: var(--light);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 1rem;
+            line-height: 1.6;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--user-bubble);
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--bot-bubble);
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .error-message {
+            align-self: flex-start;
+            background-color: var(--error-bubble);
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .typing-indicator {
+            align-self: flex-start;
+            color: var(--gray);
+            font-style: italic;
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: var(--gray);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--darker);
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--darker);
+            background-color: var(--darker);
+            color: var(--light);
+            font-family: inherit;
+        }
+
+        #send-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        #send-button:hover {
+            background: var(--primary-dark);
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 3.5rem;
+            }
+            .tagline {
+                font-size: 1.2rem;
+            }
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+
+    <!-- Landing Page -->
+    <div class="landing" id="landing-page">
+        <h1 class="logo">FinGPT</h1>
+        <p class="tagline">Your friendly guide to all things finance, explained simply</p>
+        <button class="start-btn" id="start-btn">Start Learning</button>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat-page">
+        <div class="chat-container">
+            <header class="chat-header">
+                <h2>FinGPT</h2>
+                <button class="clear-btn" id="clear-btn">Clear Chat</button>
+            </header>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Ask me anything about finance..." autocomplete="off">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            GROQ_API_KEY: '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',
+            GROQ_API_ENDPOINT: 'https://api.groq.com/openai/v1/chat/completions',
+            MODEL: 'deepseek-r1-distill-llama-70b',
+            SYSTEM_PROMPT: `You are FinGPT, a friendly financial expert that explains concepts in simple terms. Follow these rules:
+            - Use clear examples and analogies from everyday life
+            - Break complex topics into digestible parts
+            - Never use financial jargon without explaining it
+            - If a concept has multiple interpretations, mention them
+            - Admit when you don't know something
+            - Format responses with clear paragraphs and spacing
+            - Keep explanations under 300 words unless requested otherwise`
+        };
+
+        // DOM Elements
+        const landingPage = document.getElementById('landing-page');
+        const chatPage = document.getElementById('chat-page');
+        const startBtn = document.getElementById('start-btn');
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const clearBtn = document.getElementById('clear-btn');
+
+        // State
+        let chatHistory = [];
+        let isProcessing = false;
+
+        // Initialize
+        function init() {
+            loadChatHistory();
+            renderChatHistory();
+            setupEventListeners();
+            
+            if (chatHistory.length === 0) {
+                addWelcomeMessage();
+            }
+        }
+
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startChat);
+            sendButton.addEventListener('click', sendMessage);
+            clearBtn.addEventListener('click', clearChat);
+            
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !isProcessing) {
+                    sendMessage();
+                }
+            });
+        }
+
+        function startChat() {
+            landingPage.style.opacity = '0';
+            setTimeout(() => {
+                landingPage.style.display = 'none';
+                chatPage.style.display = 'flex';
+                userInput.focus();
+            }, 500);
+        }
+
+        function loadChatHistory() {
+            const savedHistory = localStorage.getItem('finGPTChatHistory');
+            if (savedHistory) {
+                try {
+                    chatHistory = JSON.parse(savedHistory);
+                } catch (e) {
+                    console.error('Error parsing chat history:', e);
+                    chatHistory = [];
+                }
+            }
+        }
+
+        function saveChatHistory() {
+            localStorage.setItem('finGPTChatHistory', JSON.stringify(chatHistory));
+        }
+
+        function renderChatHistory() {
+            chatMessages.innerHTML = '';
+            chatHistory.forEach(msg => {
+                appendMessage(msg.role, msg.content, msg.isError || false);
+            });
+        }
+
+        function addWelcomeMessage() {
+            const welcomeMsg = {
+                role: 'assistant',
+                content: "Hi! I'm FinGPT, your friendly finance assistant.\n\nI can explain any financial or economic concept in simple terms. What would you like to learn about today?\n\nFor example:\n• What exactly is inflation?\n• How do mortgages work?\n• Explain cryptocurrency like I'm 10\n• What's the difference between ETFs and mutual funds?"
+            };
+            chatHistory.push(welcomeMsg);
+            saveChatHistory();
+            appendMessage('assistant', welcomeMsg.content);
+        }
+
+        function appendMessage(role, content, isError = false) {
+            const msgElement = document.createElement('div');
+            msgElement.classList.add('message');
+            
+            if (isError) {
+                msgElement.classList.add('error-message');
+            } else {
+                msgElement.classList.add(`${role}-message`);
+            }
+            
+            // Convert newlines to paragraphs for better formatting
+            const formattedContent = content.split('\n\n').map(paragraph => {
+                return `<p>${paragraph}</p>`;
+            }).join('');
+            
+            msgElement.innerHTML = formattedContent;
+            chatMessages.appendChild(msgElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            const typingElement = document.createElement('div');
+            typingElement.classList.add('typing-indicator');
+            typingElement.innerHTML = `
+                <span>FinGPT is typing</span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            `;
+            chatMessages.appendChild(typingElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return typingElement;
+        }
+
+        function clearChat() {
+            if (confirm('Clear all chat history?')) {
+                chatHistory = [];
+                saveChatHistory();
+                chatMessages.innerHTML = '';
+                addWelcomeMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message || isProcessing) return;
+
+            // Add user message
+            appendMessage('user', message);
+            chatHistory.push({ role: 'user', content: message });
+            saveChatHistory();
+            
+            // Clear input
+            userInput.value = '';
+            isProcessing = true;
+            sendButton.disabled = true;
+            
+            // Show typing indicator
+            const typingElement = showTyping();
+            
+            try {
+                // Call Groq API
+                const response = await fetch(CONFIG.GROQ_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${CONFIG.GROQ_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: CONFIG.MODEL,
+                        messages: [
+                            { role: 'system', content: CONFIG.SYSTEM_PROMPT },
+                            ...chatHistory.map(msg => ({ role: msg.role, content: msg.content }))
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1024
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const botMessage = data.choices[0].message.content;
+
+                // Remove typing and add response
+                typingElement.remove();
+                appendMessage('assistant', botMessage);
+                chatHistory.push({ role: 'assistant', content: botMessage });
+                saveChatHistory();
+
+            } catch (error) {
+                console.error('API Error:', error);
+                typingElement.remove();
+                const errorMsg = `I'm having trouble connecting. ${error.message.includes('API Error') ? 'The API might be temporarily unavailable.' : error.message}`;
+                appendMessage('assistant', errorMsg, true);
+                chatHistory.push({ 
+                    role: 'assistant', 
+                    content: errorMsg,
+                    isError: true 
+                });
+                saveChatHistory();
+            } finally {
+                isProcessing = false;
+                sendButton.disabled = false;
+            }
+        }
+
+        // Initialize particle background
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 } },
+                color: { value: "#6d28d9" },
+                shape: { type: "circle" },
+                opacity: { value: 0.3, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#6d28d9",
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: "none",
+                    random: true,
+                    out_mode: "out"
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" }
+                }
+            }
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
